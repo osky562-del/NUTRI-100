@@ -21,11 +21,18 @@ function isAllowedOrigin(req) {
     const origin = req.headers['origin'] || '';
     const referer = req.headers['referer'] || '';
 
-    const allowedHost = process.env.ALLOWED_ORIGIN || process.env.VERCEL_URL;
-    if (!allowedHost) return true;
+    if (!origin && !referer) return true;
 
-    const normalized = allowedHost.replace(/^https?:\/\//, '');
-    return origin.includes(normalized) || referer.includes(normalized);
+    const allowed = [
+        process.env.ALLOWED_ORIGIN,
+        process.env.VERCEL_URL,
+        process.env.VERCEL_PROJECT_PRODUCTION_URL,
+        process.env.VERCEL_BRANCH_URL
+    ].filter(Boolean).map(h => h.replace(/^https?:\/\//, ''));
+
+    if (allowed.length === 0) return true;
+
+    return allowed.some(host => origin.includes(host) || referer.includes(host));
 }
 
 export default async function handler(req, res) {
