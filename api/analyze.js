@@ -119,6 +119,6 @@ export default async function handler(req, res) {
 
     } catch (error) {
         console.error("Error en la API de Vercel:", error);
-        res.status(500).json({ error: 'Hubo un error al procesar con Gemini' });
+        res.status(500).json({ error: error.message || 'Error desconocido al procesar con Gemini' });
     }
 }
