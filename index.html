@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nutrí 100 - Tu Nutricionista IA</title>
+    <link rel="stylesheet" href="style.css?v=3">
+    <script src="app.js?v=3" defer></script>
+</head>
+<body>
+
+    <header class="app-header">
+        <h1 class="app-title">Nutrí 100</h1>
+        <p class="app-subtitle">Tu nutricionista IA personal</p>
+    </header>
+
+    <main class="app-container">
+
+        <section class="actions-section" aria-label="Registro de comidas">
+            <button id="btn-foto" class="btn btn-primary" type="button">
+                <span class="icon">📸</span> Escanear Plato (IA)
+            </button>
+            <button id="btn-hablar" class="btn btn-secondary" type="button">
+                <span class="icon">🎙️</span> Dictar comida
+            </button>
+            <button id="btn-escribir" class="btn btn-secondary" type="button">
+                <span class="icon">✍️</span> Registro manual
+            </button>
+        </section>
+
+        <section class="card summary-section" aria-labelledby="summary-title">
+            <h2 id="summary-title" class="section-title">Resumen de Energía</h2>
+            <div class="macros-grid">
+                <div class="macro-item">
+                    <span class="macro-value" id="total-cal">0</span>
+                    <span class="macro-label">kcal</span>
+                </div>
+                <div class="macro-item">
+                    <span class="macro-value" id="total-prot">0</span>
+                    <span class="macro-label">Proteína (g)</span>
+                </div>
+                <div class="macro-item">
+                    <span class="macro-value" id="total-carb">0</span>
+                    <span class="macro-label">Carbos (g)</span>
+                </div>
+                <div class="macro-item">
+                    <span class="macro-value" id="total-fat">0</span>
+                    <span class="macro-label">Grasas (g)</span>
+                </div>
+            </div>
+            <div class="progress-container">
+                <p>Objetivo: <strong><span id="calories-consumed">0</span> / <span id="calories-goal">2000</span> kcal</strong></p>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card log-section" aria-labelledby="log-title">
+            <div class="section-header">
+                <h2 id="log-title" class="section-title">Comidas de Hoy</h2>
+                <button id="btn-clear-log" class="btn-icon" title="Borrar registro del día">🗑️</button>
+            </div>
+            <div id="food-log" class="food-log">
+                <p class="empty-state" id="empty-log">Aún no has registrado comidas hoy. ¡Empieza arriba!</p>
+            </div>
+        </section>
+
+        <section class="card menu-section" aria-labelledby="menu-title">
+            <h2 id="menu-title" class="section-title">Ideas Rápidas</h2>
+            <ul class="meal-list">
+                <li class="meal-item suggestion" data-name="Tostada integral con aguacate y huevo" data-cal="350" data-prot="15" data-carb="30" data-fat="18">
+                    <div class="meal-info">
+                        <strong>Desayuno</strong>
+                        <span>Tostada integral con aguacate y huevo</span>
+                    </div>
+                    <span class="badge-cal">350 kcal</span>
+                </li>
+                <li class="meal-item suggestion" data-name="Bowl de garbanzos, espinacas y cherrys" data-cal="420" data-prot="18" data-carb="52" data-fat="14">
+                    <div class="meal-info">
+                        <strong>Comida</strong>
+                        <span>Bowl de garbanzos, espinacas y cherrys</span>
+                    </div>
+                    <span class="badge-cal">420 kcal</span>
+                </li>
+                <li class="meal-item suggestion" data-name="Tortilla francesa y espárragos a la plancha" data-cal="280" data-prot="20" data-carb="8" data-fat="18">
+                    <div class="meal-info">
+                        <strong>Cena</strong>
+                        <span>Tortilla francesa y espárragos a la plancha</span>
+                    </div>
+                    <span class="badge-cal">280 kcal</span>
+                </li>
+            </ul>
+        </section>
+
+    </main>
+
+    <footer class="app-footer">
+        <p>Nutrí 100 v2.0 &bull; Impulsado por Gemini Flash</p>
+    </footer>
+
+    <!-- Modal: Cámara -->
+    <div id="camera-modal" class="modal hidden" aria-hidden="true">
+        <div class="modal-content">
+            <h3 class="modal-title">Escanea tu plato</h3>
+            <video id="camera-feed" autoplay playsinline></video>
+            <canvas id="photo-canvas" class="hidden"></canvas>
+            <div class="camera-actions">
+                <button id="btn-capturar" class="btn btn-primary">📸 Capturar</button>
+                <button id="btn-cerrar-camara" class="btn btn-secondary">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Registro manual -->
+    <div id="manual-modal" class="modal hidden" aria-hidden="true">
+        <div class="modal-content">
+            <h3 class="modal-title">Registro Manual</h3>
+            <form id="manual-form" class="manual-form">
+                <input type="text" id="input-name" placeholder="Nombre del plato" required>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="input-cal">Calorías</label>
+                        <input type="number" id="input-cal" placeholder="kcal" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="input-prot">Proteína</label>
+                        <input type="number" id="input-prot" placeholder="g" min="0" value="0">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="input-carb">Carbos</label>
+                        <input type="number" id="input-carb" placeholder="g" min="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="input-fat">Grasas</label>
+                        <input type="number" id="input-fat" placeholder="g" min="0" value="0">
+                    </div>
+                </div>
+                <div class="camera-actions">
+                    <button type="submit" class="btn btn-primary">✅ Guardar</button>
+                    <button type="button" id="btn-cerrar-manual" class="btn btn-secondary">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Dictado por voz -->
+    <div id="voice-modal" class="modal hidden" aria-hidden="true">
+        <div class="modal-content">
+            <h3 class="modal-title">Dictar Comida</h3>
+            <p class="voice-hint">Di lo que comiste, por ejemplo: "Un plato de arroz con pollo y ensalada"</p>
+            <div id="voice-indicator" class="voice-indicator">
+                <div class="pulse-ring"></div>
+                <span class="mic-icon">🎙️</span>
+            </div>
+            <p id="voice-status" class="voice-status">Escuchando...</p>
+            <p id="voice-transcript" class="voice-transcript"></p>
+            <div class="camera-actions">
+                <button id="btn-voice-send" class="btn btn-primary hidden">🤖 Analizar con IA</button>
+                <button id="btn-cerrar-voz" class="btn btn-secondary">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Resultado IA -->
+    <div id="result-modal" class="modal hidden" aria-hidden="true">
+        <div class="modal-content">
+            <h3 class="modal-title">Resultado del Análisis</h3>
+            <div id="ai-result" class="ai-result"></div>
+            <form id="result-form" class="manual-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="res-name">Plato</label>
+                        <input type="text" id="res-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="res-cal">kcal</label>
+                        <input type="number" id="res-cal" min="0" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="res-prot">Prot (g)</label>
+                        <input type="number" id="res-prot" min="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="res-carb">Carb (g)</label>
+                        <input type="number" id="res-carb" min="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="res-fat">Grasa (g)</label>
+                        <input type="number" id="res-fat" min="0" value="0">
+                    </div>
+                </div>
+                <div class="camera-actions">
+                    <button type="submit" class="btn btn-primary">✅ Añadir al registro</button>
+                    <button type="button" id="btn-cerrar-resultado" class="btn btn-secondary">Descartar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div id="toast" class="toast hidden"></div>
+
+</body>
+</html>
