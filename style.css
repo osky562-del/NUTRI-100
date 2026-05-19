@@ -859,3 +859,182 @@ body {
 /* ===== DOT COLORS ===== */
 .dot-fiber { background: var(--fiber-color); }
 .dot-sodium { background: var(--sodium-color); }
+
+/* ===== TABS ===== */
+.tabs-nav {
+    display: flex;
+    max-width: 480px;
+    margin: 12px auto 0;
+    padding: 0 16px;
+    gap: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.tabs-nav::-webkit-scrollbar { display: none; }
+
+.tab {
+    flex: 1;
+    padding: 10px 6px;
+    border: none;
+    background: var(--card);
+    color: var(--text2);
+    font-size: 0.78rem;
+    font-weight: 600;
+    font-family: inherit;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    cursor: pointer;
+    transition: all var(--transition);
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+}
+.tab.active { color: var(--primary-dark); border-bottom-color: var(--primary); background: var(--glass); }
+
+.tab-content { display: none; }
+.tab-content.active { display: flex; }
+
+/* ===== FASTING ===== */
+.fasting-card { align-items: center; }
+
+.fasting-protocol-selector { display: flex; gap: 8px; margin-bottom: 16px; }
+
+.fasting-proto {
+    padding: 8px 18px;
+    border: 2px solid var(--card-border);
+    border-radius: 30px;
+    background: var(--bg2);
+    font-size: 0.9rem;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    color: var(--text2);
+    transition: all var(--transition);
+}
+.fasting-proto.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary-dark); }
+
+.fasting-ring-container {
+    position: relative;
+    width: 200px;
+    height: 200px;
+    margin: 8px 0;
+}
+
+.fasting-ring { width: 100%; height: 100%; transform: rotate(-90deg); }
+.fasting-ring-bg { fill: none; stroke: var(--bg2); stroke-width: 12; }
+.fasting-ring-fill {
+    fill: none;
+    stroke: var(--primary);
+    stroke-width: 12;
+    stroke-linecap: round;
+    stroke-dasharray: 534.07;
+    stroke-dashoffset: 534.07;
+    transition: stroke-dashoffset 1s ease;
+}
+.fasting-ring-fill.eating { stroke: var(--accent); }
+
+.fasting-ring-center {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+.fasting-time { display: block; font-size: 2rem; font-weight: 800; color: var(--text); }
+.fasting-state { display: block; font-size: 0.82rem; color: var(--text2); font-weight: 600; }
+
+.fasting-info { display: flex; gap: 16px; margin: 12px 0; }
+.fasting-info-item { text-align: center; }
+.fasting-info-label { display: block; font-size: 0.68rem; color: var(--text3); text-transform: uppercase; font-weight: 600; }
+.fasting-info-item span:last-child { font-size: 0.88rem; font-weight: 700; }
+
+.fasting-actions { display: flex; gap: 10px; width: 100%; }
+
+.fasting-history { width: 100%; margin-top: 16px; }
+.fasting-entry { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--card-border); font-size: 0.82rem; }
+
+/* ===== SYMPTOMS ===== */
+.symptom-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.symptom-btn {
+    padding: 7px 12px;
+    border: 1.5px solid var(--card-border);
+    border-radius: 30px;
+    background: var(--bg2);
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: all var(--transition);
+    font-family: inherit;
+    color: var(--text2);
+}
+.symptom-btn.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary-dark); font-weight: 600; }
+.symptom-log { font-size: 0.8rem; color: var(--text3); }
+
+/* ===== PLAN ===== */
+.plan-desc { font-size: 0.85rem; color: var(--text2); line-height: 1.5; }
+.plan-input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--card-border);
+    border-radius: var(--radius-xs);
+    font-size: 0.95rem;
+    font-family: inherit;
+    background: var(--bg2);
+    color: var(--text);
+}
+.plan-input:focus { outline: none; border-color: var(--primary); }
+.plan-result { white-space: pre-wrap; font-size: 0.85rem; line-height: 1.6; padding: 14px; background: var(--bg2); border-radius: var(--radius-xs); margin-top: 12px; max-height: 60vh; overflow-y: auto; }
+.shopping-list { font-size: 0.88rem; line-height: 1.7; white-space: pre-wrap; }
+
+/* ===== BODY PROGRESS ===== */
+.body-chart { width: 100%; min-height: 120px; display: flex; align-items: flex-end; gap: 4px; padding: 10px 0; }
+.body-bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.body-bar { width: 100%; border-radius: 4px 4px 0 0; background: var(--primary); min-height: 2px; transition: height 0.4s ease; }
+.body-bar-label { font-size: 0.6rem; color: var(--text3); }
+.body-bar-val { font-size: 0.65rem; font-weight: 700; color: var(--text); }
+.body-history { margin-top: 10px; }
+.body-entry { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--card-border); font-size: 0.82rem; }
+.body-entry-date { color: var(--text2); }
+
+/* ===== CHAT ===== */
+.chat-modal-content { height: 80vh; max-height: 80vh; }
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 8px 0;
+}
+.chat-msg {
+    padding: 10px 14px;
+    border-radius: 16px;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    max-width: 85%;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+}
+.chat-msg.user { background: var(--primary); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+.chat-msg.bot { background: var(--bg2); color: var(--text); align-self: flex-start; border-bottom-left-radius: 4px; }
+.chat-msg.loading { opacity: 0.6; font-style: italic; }
+.chat-input-row { display: flex; gap: 8px; }
+.chat-input {
+    flex: 1;
+    padding: 12px 14px;
+    border: 1.5px solid var(--card-border);
+    border-radius: 30px;
+    font-size: 0.92rem;
+    font-family: inherit;
+    background: var(--bg2);
+    color: var(--text);
+}
+.chat-input:focus { outline: none; border-color: var(--primary); }
+.btn-chat-send {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    border: none;
+    background: var(--primary);
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
