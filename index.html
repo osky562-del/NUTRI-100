@@ -132,18 +132,9 @@
         <section class="card glass water-section">
             <div class="section-header">
                 <h2 class="section-title">Hidratación 💧</h2>
-                <span class="water-count" id="water-count">0 / 8 vasos</span>
+                <span class="water-count" id="water-count">0 / 2 L</span>
             </div>
-            <div class="water-glasses" id="water-glasses">
-                <button class="water-glass" data-index="0">💧</button>
-                <button class="water-glass" data-index="1">💧</button>
-                <button class="water-glass" data-index="2">💧</button>
-                <button class="water-glass" data-index="3">💧</button>
-                <button class="water-glass" data-index="4">💧</button>
-                <button class="water-glass" data-index="5">💧</button>
-                <button class="water-glass" data-index="6">💧</button>
-                <button class="water-glass" data-index="7">💧</button>
-            </div>
+            <div class="water-glasses" id="water-glasses"></div>
         </section>
 
         <!-- Food log -->
@@ -336,7 +327,7 @@
             <h3 class="modal-title">Ajustes</h3>
             <form id="settings-form" class="modal-form">
                 <div class="form-group"><label for="set-goal">Objetivo calórico (kcal)</label><input type="number" id="set-goal" min="500" max="8000" value="2000"></div>
-                <div class="form-group"><label for="set-water">Vasos de agua objetivo</label><input type="number" id="set-water" min="1" max="20" value="8"></div>
+                <div class="form-group"><label for="set-water">Litros de agua objetivo</label><input type="number" id="set-water" min="0.5" max="6" step="0.25" value="2"></div>
                 <button type="button" id="btn-edit-profile" class="btn btn-modal-secondary" style="margin-bottom:4px">👤 Editar perfil TDEE</button>
                 <div class="modal-actions">
                     <button type="submit" class="btn btn-modal-primary">💾 Guardar</button>

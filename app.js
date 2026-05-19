@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ===== SETTINGS & PROFILE =====
     function getSettings() {
         const s = localStorage.getItem(STORAGE_SETTINGS);
-        return s ? JSON.parse(s) : { goal: 2000, waterGoal: 8 };
+        return s ? JSON.parse(s) : { goal: 2000, waterLiters: 2 };
     }
     function saveSettings(s) { localStorage.setItem(STORAGE_SETTINGS, JSON.stringify(s)); }
     function getProfile() {
@@ -286,12 +286,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function openSettings() {
         const s = getSettings();
         $('set-goal').value = s.goal;
-        $('set-water').value = s.waterGoal;
+        $('set-water').value = s.waterLiters;
         openModal(settingsModal);
     }
     function handleSettingsSubmit(e) {
         e.preventDefault();
-        saveSettings({ goal: +$('set-goal').value || 2000, waterGoal: +$('set-water').value || 8 });
+        saveSettings({ goal: +$('set-goal').value || 2000, waterLiters: +$('set-water').value || 2 });
         applyProfile();
         loadLog(); loadWater();
         closeModal(settingsModal);
@@ -562,18 +562,39 @@ document.addEventListener('DOMContentLoaded', () => {
         sodiumBarText.textContent = `${t.sodium}/${SODIUM_LIMIT}mg`;
     }
 
-    // ===== WATER =====
+    // ===== WATER (litros, cada botón = 0.25L) =====
+    const GLASS_SIZE = 0.25;
     function waterKey() { return STORAGE_WATER + '_' + new Date().toISOString().slice(0, 10); }
     function getWater() { const d = localStorage.getItem(waterKey()); return d ? JSON.parse(d) : 0; }
     function saveWater(n) { localStorage.setItem(waterKey(), JSON.stringify(n)); }
-    function toggleWater(idx) { const c = getWater(); saveWater(idx + 1 === c ? idx : idx + 1); renderWater(getWater()); }
-    function loadWater() { renderWater(getWater()); }
+
+    function toggleWater(idx) {
+        const current = getWater();
+        saveWater(idx + 1 === current ? idx : idx + 1);
+        renderWater(getWater());
+    }
+
+    function loadWater() { buildWaterButtons(); renderWater(getWater()); }
+
+    function buildWaterButtons() {
+        const liters = getSettings().waterLiters || 2;
+        const total = Math.round(liters / GLASS_SIZE);
+        waterGlasses.innerHTML = '';
+        for (let i = 0; i < total; i++) {
+            const btn = document.createElement('button');
+            btn.className = 'water-glass';
+            btn.dataset.index = i;
+            btn.textContent = '💧';
+            waterGlasses.appendChild(btn);
+        }
+    }
+
     function renderWater(count) {
-        const goal = getSettings().waterGoal;
-        waterCountEl.textContent = `${count} / ${goal} vasos`;
+        const liters = getSettings().waterLiters || 2;
+        const filled = (count * GLASS_SIZE).toFixed(2).replace(/\.?0+$/, '');
+        waterCountEl.textContent = `${filled} / ${liters} L`;
         waterGlasses.querySelectorAll('.water-glass').forEach((btn, i) => {
             btn.classList.toggle('filled', i < count);
-            btn.style.display = i < goal ? '' : 'none';
         });
     }
 
