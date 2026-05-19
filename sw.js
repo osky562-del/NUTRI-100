@@ -1,9 +1,9 @@
-const CACHE_NAME = 'nutri100-v5';
+const CACHE_NAME = 'nutri100-v7';
 const ASSETS = [
     '/',
     '/index.html',
-    '/style.css?v=5',
-    '/app.js?v=5',
+    '/style.css?v=7',
+    '/app.js?v=7',
     '/manifest.json'
 ];
 
@@ -30,9 +30,9 @@ self.addEventListener('fetch', e => {
         caches.match(e.request)
             .then(cached => {
                 const fetchPromise = fetch(e.request).then(res => {
-                    if (res.ok) {
+                    if (res.ok && e.request.url.startsWith('http')) {
                         const clone = res.clone();
-                        caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone));
+                        caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone).catch(() => {}));
                     }
                     return res;
                 }).catch(() => cached);
