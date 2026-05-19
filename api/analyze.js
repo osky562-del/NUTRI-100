@@ -2,7 +2,7 @@ const rateLimitMap = new Map();
 const RATE_LIMIT_WINDOW = 60 * 1000;
 const RATE_LIMIT_MAX = 10;
 const MAX_BASE64_LENGTH = 4 * 1024 * 1024;
-const MAX_TEXT_LENGTH = 500;
+const MAX_TEXT_LENGTH = 3000;
 
 function checkRateLimit(ip) {
     const now = Date.now();
