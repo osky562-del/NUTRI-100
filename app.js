@@ -34,16 +34,42 @@ document.addEventListener('DOMContentLoaded', () => {
     const STORAGE_SYMPTOMS='nutri100_symptoms',STORAGE_BODY='nutri100_body',STORAGE_PLAN='nutri100_plan';
     const RING_C=326.73,FASTING_C=534.07,FIBER_GOAL=25,SODIUM_LIMIT=2000;
 
+    const GLASS_SIZE=0.25;
+    const CAT_ICONS={desayuno:'🌅',comida:'☀️',cena:'🌙',snack:'🍎'};
+    const Q_COLORS={A:'var(--quality-a)',B:'var(--quality-b)',C:'var(--quality-c)',D:'var(--quality-d)',F:'var(--quality-f)'};
+
     let stream=null,recognition=null,selectedCat='comida',fastingInterval=null;
 
     // ===== HELPERS =====
-    function getS(){ const s=localStorage.getItem(STORAGE_SETTINGS); return s?JSON.parse(s):{goal:2000,waterLiters:2}; }
-    function saveS(s){ localStorage.setItem(STORAGE_SETTINGS,JSON.stringify(s)); }
-    function getProfile(){ const p=localStorage.getItem(STORAGE_PROFILE); return p?JSON.parse(p):null; }
-    function saveProfile(p){ localStorage.setItem(STORAGE_PROFILE,JSON.stringify(p)); }
+    function safeGet(key, defaultVal) {
+        try {
+            const val = localStorage.getItem(key);
+            if (val === null) return defaultVal;
+            try {
+                return JSON.parse(val);
+            } catch (jsonErr) {
+                return val;
+            }
+        } catch (e) {
+            console.error("Error reading localStorage key " + key + ":", e);
+            return defaultVal;
+        }
+    }
+    function safeSet(key, val) {
+        try {
+            localStorage.setItem(key, typeof val === 'string' ? val : JSON.stringify(val));
+        } catch (e) {
+            console.error("Error writing localStorage key " + key + ":", e);
+        }
+    }
+
+    function getS(){ return safeGet(STORAGE_SETTINGS, {goal:2000,waterLiters:2}); }
+    function saveS(s){ safeSet(STORAGE_SETTINGS, s); }
+    function getProfile(){ return safeGet(STORAGE_PROFILE, null); }
+    function saveProfile(p){ safeSet(STORAGE_PROFILE, p); }
     function dayKey(d){ const x=d||new Date(); return STORAGE_LOG+'_'+x.toISOString().slice(0,10); }
-    function getLog(d){ const x=localStorage.getItem(dayKey(d)); return x?JSON.parse(x):[]; }
-    function saveLog(e,d){ localStorage.setItem(dayKey(d),JSON.stringify(e)); }
+    function getLog(d){ return safeGet(dayKey(d), []); }
+    function saveLog(e,d){ safeSet(dayKey(d), e); }
     function timeNow(){ return new Date().toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'}); }
     function dateStr(d){ return (d||new Date()).toISOString().slice(0,10); }
     function esc(t){ const d=document.createElement('div'); d.textContent=t; return d.innerHTML; }
@@ -54,7 +80,21 @@ document.addEventListener('DOMContentLoaded', () => {
     async function aiCall(body){ const r=await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); const d=await r.json(); if(d.error)throw new Error(d.error); return d.result; }
 
     // ===== INIT =====
-    setGreeting();loadTheme();applyProfile();loadLog();loadWater();renderWeek();updateStreak();loadFasting();loadSymptoms();loadBody();loadPlan();
+    try {
+        setGreeting();
+        loadTheme();
+        applyProfile();
+        loadLog();
+        loadWater();
+        renderWeek();
+        updateStreak();
+        loadFasting();
+        loadSymptoms();
+        loadBody();
+        loadPlan();
+    } catch (err) {
+        console.error("Error during initialization:", err);
+    }
 
     // ===== TABS =====
     document.querySelectorAll('.tab').forEach(tab=>{
@@ -93,8 +133,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ===== GREETING & THEME =====
     function setGreeting(){const h=new Date().getHours();greeting.textContent=h<12?'Buenos días ☀️':h<20?'Buenas tardes 🌤️':'Buenas noches 🌙';}
-    function loadTheme(){const t=localStorage.getItem(STORAGE_THEME)||'light';document.documentElement.setAttribute('data-theme',t);btnTheme.textContent=t==='dark'?'☀️':'🌙';}
-    function toggleTheme(){const n=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);localStorage.setItem(STORAGE_THEME,n);btnTheme.textContent=n==='dark'?'☀️':'🌙';}
+    function loadTheme(){const t=safeGet(STORAGE_THEME,'light');document.documentElement.setAttribute('data-theme',t);btnTheme.textContent=t==='dark'?'☀️':'🌙';}
+    function toggleTheme(){const n=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);safeSet(STORAGE_THEME,n);btnTheme.textContent=n==='dark'?'☀️':'🌙';}
 
     // ===== TDEE =====
     function calcTDEE(p){let b;if(p.sex==='male')b=10*p.weight+6.25*p.height-5*p.age+5;else b=10*p.weight+6.25*p.height-5*p.age-161;const t=Math.round(b*p.activity);let g;if(p.objective==='lose')g=Math.round(t*0.8);else if(p.objective==='gain')g=Math.round(t*1.15);else g=t;return{bmr:Math.round(b),tdee:t,goal:g};}
@@ -133,8 +173,6 @@ document.addEventListener('DOMContentLoaded', () => {
     async function generateAIReport(){const entries=getLog();if(!entries.length){showToast('Registra comidas primero');return;}openModal(reportModal);reportContent.textContent='Analizando...';const t=entries.reduce((a,e)=>({cal:a.cal+(e.cal||0),prot:a.prot+(e.prot||0),carb:a.carb+(e.carb||0),fat:a.fat+(e.fat||0),fiber:a.fiber+(e.fiber||0),sodium:a.sodium+(e.sodium||0)}),{cal:0,prot:0,carb:0,fat:0,fiber:0,sodium:0});const p=getProfile();const g=getS().goal;const meals=entries.map(e=>`${e.name}(${e.cal}kcal)`).join(', ');let pi='';if(p)pi=`${p.sex==='male'?'Hombre':'Mujer'}, ${p.age}a, ${p.weight}kg. Obj: ${p.objective==='lose'?'perder grasa':p.objective==='gain'?'ganar músculo':'mantener'}. `;try{const r=await aiCall({textData:`Nutricionista titulado. ${pi}Hoy comió: ${meals}. Total: ${t.cal}kcal(obj:${g}), P:${t.prot}g, C:${t.carb}g, G:${t.fat}g, Fibra:${t.fiber}g(rec:25g), Sodio:${t.sodium}mg(lim:2000mg). Análisis: 1)Bien 2)Falta/reducir 3)Sugerencia mañana. Breve y amigable.`});reportContent.textContent=r;}catch(e){reportContent.textContent='Error: '+e.message;}}
 
     // ===== FOOD LOG =====
-    const CAT_ICONS={desayuno:'🌅',comida:'☀️',cena:'🌙',snack:'🍎'};
-    const Q_COLORS={A:'var(--quality-a)',B:'var(--quality-b)',C:'var(--quality-c)',D:'var(--quality-d)',F:'var(--quality-f)'};
     function addEntry(e){e.id=Date.now();e.quality=calcQuality(e).grade;const entries=getLog();entries.push(e);saveLog(entries);renderLog(entries);updateTotals(entries);renderWeek();updateStreak();updateTDEERemaining();}
     function removeEntry(id){const entries=getLog().filter(e=>e.id!==id);saveLog(entries);renderLog(entries);updateTotals(entries);renderWeek();updateStreak();updateTDEERemaining();}
     function clearLog(){if(!confirm('¿Borrar comidas de hoy?'))return;saveLog([]);renderLog([]);updateTotals([]);renderWeek();updateTDEERemaining();showToast('Borrado');}
@@ -143,10 +181,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateTotals(entries){const t=entries.reduce((a,e)=>({cal:a.cal+(e.cal||0),prot:a.prot+(e.prot||0),carb:a.carb+(e.carb||0),fat:a.fat+(e.fat||0),fiber:a.fiber+(e.fiber||0),sodium:a.sodium+(e.sodium||0)}),{cal:0,prot:0,carb:0,fat:0,fiber:0,sodium:0});const g=getS().goal;totalProtEl.textContent=t.prot;totalCarbEl.textContent=t.carb;totalFatEl.textContent=t.fat;totalFiberEl.textContent=t.fiber;totalSodiumEl.textContent=t.sodium;caloriesConsumed.textContent=t.cal;ringCal.textContent=t.cal;const p=Math.min((t.cal/g)*100,100);progressFill.style.width=p+'%';progressFill.classList.toggle('over',t.cal>g);ringFill.style.strokeDashoffset=RING_C-(RING_C*Math.min(t.cal/g,1));ringFill.classList.toggle('over',t.cal>g);fiberFill.style.width=Math.min((t.fiber/FIBER_GOAL)*100,100)+'%';fiberBarText.textContent=`${t.fiber}/${FIBER_GOAL}g`;sodiumFill.style.width=Math.min((t.sodium/SODIUM_LIMIT)*100,100)+'%';sodiumFill.classList.toggle('over',t.sodium>SODIUM_LIMIT);sodiumBarText.textContent=`${t.sodium}/${SODIUM_LIMIT}mg`;}
 
     // ===== WATER =====
-    const GLASS_SIZE=0.25;
     function waterKey(){return STORAGE_WATER+'_'+dateStr();}
-    function getWater(){const d=localStorage.getItem(waterKey());return d?JSON.parse(d):0;}
-    function saveWater(n){localStorage.setItem(waterKey(),JSON.stringify(n));}
+    function getWater(){return safeGet(waterKey(),0);}
+    function saveWater(n){safeSet(waterKey(),n);}
     function toggleWater(i){const c=getWater();saveWater(i+1===c?i:i+1);renderWater(getWater());}
     function loadWater(){buildWaterButtons();renderWater(getWater());}
     function buildWaterButtons(){const l=getS().waterLiters||2;const tot=Math.round(l/GLASS_SIZE);waterGlasses.innerHTML='';for(let i=0;i<tot;i++){const b=document.createElement('button');b.className='water-glass';b.dataset.index=i;b.textContent='💧';waterGlasses.appendChild(b);}}
@@ -157,12 +194,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateStreak(){let s=0;const d=new Date();d.setDate(d.getDate()-1);while(getLog(d).length>0){s++;d.setDate(d.getDate()-1);}if(getLog().length>0)s++;streakCount.textContent=s;}
 
     // ===== FASTING =====
-    function getFasting(){const d=localStorage.getItem(STORAGE_FASTING);return d?JSON.parse(d):null;}
-    function saveFasting(f){localStorage.setItem(STORAGE_FASTING,JSON.stringify(f));}
+    function getFasting(){return safeGet(STORAGE_FASTING,null);}
+    function saveFasting(f){safeSet(STORAGE_FASTING,f);}
 
     function toggleFasting(){
         const f=getFasting();
-        if(f&&f.active){f.active=false;f.endTime=Date.now();const hist=JSON.parse(localStorage.getItem(STORAGE_FASTING+'_hist')||'[]');hist.unshift({start:f.startTime,end:f.endTime,hours:((f.endTime-f.startTime)/3600000).toFixed(1)});if(hist.length>10)hist.pop();localStorage.setItem(STORAGE_FASTING+'_hist',JSON.stringify(hist));saveFasting(f);$('btn-fasting-toggle').textContent='▶️ Iniciar Ayuno';showToast('Ayuno terminado');renderFastingHistory();}
+        if(f&&f.active){f.active=false;f.endTime=Date.now();const hist=safeGet(STORAGE_FASTING+'_hist',[]);hist.unshift({start:f.startTime,end:f.endTime,hours:((f.endTime-f.startTime)/3600000).toFixed(1)});if(hist.length>10)hist.pop();safeSet(STORAGE_FASTING+'_hist',hist);saveFasting(f);$('btn-fasting-toggle').textContent='▶️ Iniciar Ayuno';showToast('Ayuno terminado');renderFastingHistory();}
         else{const proto=document.querySelector('.fasting-proto.active');saveFasting({active:true,startTime:Date.now(),fastH:+proto.dataset.fast,eatH:+proto.dataset.eat});$('btn-fasting-toggle').textContent='⏹️ Terminar Ayuno';showToast('Ayuno iniciado');}
         updateFastingUI();
     }
@@ -194,12 +231,12 @@ document.addEventListener('DOMContentLoaded', () => {
         },1000);
     }
 
-    function renderFastingHistory(){const hist=JSON.parse(localStorage.getItem(STORAGE_FASTING+'_hist')||'[]');const c=$('fasting-history');c.innerHTML=hist.length?'<h3 class="section-title" style="margin-top:8px">Historial</h3>':'';hist.forEach(h=>{const d=new Date(h.start);c.innerHTML+=`<div class="fasting-entry"><span>${d.toLocaleDateString('es',{day:'numeric',month:'short'})}</span><span>${h.hours}h ayunadas</span></div>`;});}
+    function renderFastingHistory(){const hist=safeGet(STORAGE_FASTING+'_hist',[]);const c=$('fasting-history');c.innerHTML=hist.length?'<h3 class="section-title" style="margin-top:8px">Historial</h3>':'';hist.forEach(h=>{const d=new Date(h.start);c.innerHTML+=`<div class="fasting-entry"><span>${d.toLocaleDateString('es',{day:'numeric',month:'short'})}</span><span>${h.hours}h ayunadas</span></div>`;});}
 
     // ===== SYMPTOMS DIARY =====
     function symptomKey(){return STORAGE_SYMPTOMS+'_'+dateStr();}
-    function getSymptoms(){const d=localStorage.getItem(symptomKey());return d?JSON.parse(d):[];}
-    function saveSymptoms(s){localStorage.setItem(symptomKey(),JSON.stringify(s));}
+    function getSymptoms(){return safeGet(symptomKey(),[]);}
+    function saveSymptoms(s){safeSet(symptomKey(),s);}
 
     function saveCurrentSymptoms(){
         const active=[];document.querySelectorAll('.symptom-btn.active').forEach(b=>active.push({symptom:b.dataset.symptom,emoji:b.dataset.emoji,time:timeNow()}));
@@ -215,7 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderSymptomLog(){const s=getSymptoms();const c=$('symptom-log');c.textContent=s.length?'Registrado: '+s.map(x=>x.emoji).join(' '):'';}
 
     async function analyzeSymptomPatterns(){
-        const days=[];for(let i=0;i<14;i++){const d=new Date();d.setDate(d.getDate()-i);const sk=STORAGE_SYMPTOMS+'_'+d.toISOString().slice(0,10);const sym=localStorage.getItem(sk);const food=getLog(d);if(sym||food.length){days.push({date:d.toLocaleDateString('es',{day:'numeric',month:'short'}),symptoms:sym?JSON.parse(sym).map(s=>s.symptom).join(','):'ninguno',food:food.map(f=>f.name).join(', ')||'nada'});}}
+        const days=[];for(let i=0;i<14;i++){const d=new Date();d.setDate(d.getDate()-i);const sk=STORAGE_SYMPTOMS+'_'+d.toISOString().slice(0,10);const sym=safeGet(sk,null);const food=getLog(d);if(sym||food.length){days.push({date:d.toLocaleDateString('es',{day:'numeric',month:'short'}),symptoms:sym?sym.map(s=>s.symptom).join(','):'ninguno',food:food.map(f=>f.name).join(', ')||'nada'});}}
         if(days.length<3){showToast('Necesitas al menos 3 días de datos');return;}
         openModal(reportModal);reportContent.textContent='Buscando patrones...';
         const data=days.map(d=>`${d.date}: comió[${d.food}] síntomas[${d.symptoms}]`).join('; ');
@@ -223,7 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ===== MEAL PLAN =====
-    function loadPlan(){const p=localStorage.getItem(STORAGE_PLAN);if(p){const data=JSON.parse(p);$('plan-result').textContent=data.plan;$('plan-result').classList.remove('hidden');if(data.list){$('shopping-section').style.display='';$('shopping-list').textContent=data.list;}}}
+    function loadPlan(){const data=safeGet(STORAGE_PLAN,null);if(data){$('plan-result').textContent=data.plan;$('plan-result').classList.remove('hidden');if(data.list){$('shopping-section').style.display='';$('shopping-list').textContent=data.list;}}}
 
     async function generatePlan(){
         const btn=$('btn-generate-plan');btn.textContent='⏳ Generando...';btn.disabled=true;
@@ -234,7 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
             $('plan-result').textContent=plan;$('plan-result').classList.remove('hidden');
             const list=await aiCall({textData:`Genera una lista de la compra agrupada por secciones del supermercado (🥬Frutería, 🥩Carnicería/Pescadería, 🥛Lácteos, 🥫Despensa, 🧊Congelados, 🍞Panadería) para este plan semanal: ${plan.slice(0,1500)}. Solo la lista, sin explicación.`});
             $('shopping-section').style.display='';$('shopping-list').textContent=list;
-            localStorage.setItem(STORAGE_PLAN,JSON.stringify({plan,list,date:dateStr()}));
+            safeSet(STORAGE_PLAN,{plan,list,date:dateStr()});
         }catch(e){showToast('Error: '+e.message);}
         finally{btn.textContent='🤖 Generar Plan Semanal';btn.disabled=false;}
     }
@@ -243,8 +280,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ===== BODY PROGRESS =====
     function bodyKey(){return STORAGE_BODY;}
-    function getBody(){const d=localStorage.getItem(bodyKey());return d?JSON.parse(d):[];}
-    function saveBody(b){localStorage.setItem(bodyKey(),JSON.stringify(b));}
+    function getBody(){return safeGet(bodyKey(),[]);}
+    function saveBody(b){safeSet(bodyKey(),b);}
 
     function handleBodySubmit(e){
         e.preventDefault();
