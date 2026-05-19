@@ -12,8 +12,8 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180.png">
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
-    <link rel="stylesheet" href="style.css?v=3">
-    <script src="app.js?v=3" defer></script>
+    <link rel="stylesheet" href="style.css?v=4">
+    <script src="app.js?v=4" defer></script>
 </head>
 <body>
 
@@ -25,6 +25,7 @@
                 <p class="app-subtitle" id="greeting">Tu nutricionista IA</p>
             </div>
             <div class="header-actions">
+                <button id="btn-ai-report" class="btn-icon-round" title="Informe IA">🤖</button>
                 <button id="btn-theme" class="btn-icon-round" title="Cambiar tema">🌙</button>
                 <button id="btn-settings" class="btn-icon-round" title="Ajustes">⚙️</button>
             </div>
@@ -35,10 +36,22 @@
         </div>
     </header>
 
+    <!-- Profile setup banner -->
+    <div class="profile-banner card glass" id="profile-banner">
+        <div class="profile-banner-content">
+            <span class="profile-banner-icon">👤</span>
+            <div>
+                <strong>Configura tu perfil</strong>
+                <p>Calcula tu gasto calórico personalizado</p>
+            </div>
+        </div>
+        <button id="btn-open-profile" class="btn btn-compact-sm">Configurar</button>
+    </div>
+
     <main class="app-container">
 
         <!-- Actions -->
-        <section class="actions-section" aria-label="Registro de comidas">
+        <section class="actions-section">
             <button id="btn-foto" class="btn btn-hero" type="button">
                 <span class="btn-icon-lg">📸</span>
                 <div class="btn-text">
@@ -56,12 +69,29 @@
             </div>
         </section>
 
-        <!-- Macro ring + summary -->
-        <section class="card glass summary-section" aria-labelledby="summary-title">
-            <h2 id="summary-title" class="section-title">Resumen del Día</h2>
+        <!-- TDEE info bar -->
+        <div class="tdee-bar card glass" id="tdee-bar" style="display:none;">
+            <div class="tdee-item">
+                <span class="tdee-label">Tu TDEE</span>
+                <span class="tdee-value" id="tdee-value">—</span>
+            </div>
+            <div class="tdee-divider"></div>
+            <div class="tdee-item">
+                <span class="tdee-label">Objetivo</span>
+                <span class="tdee-value" id="tdee-objective">—</span>
+            </div>
+            <div class="tdee-divider"></div>
+            <div class="tdee-item">
+                <span class="tdee-label">Restante</span>
+                <span class="tdee-value" id="tdee-remaining">—</span>
+            </div>
+        </div>
 
+        <!-- Macro ring + summary -->
+        <section class="card glass summary-section">
+            <h2 class="section-title">Resumen del Día</h2>
             <div class="ring-and-macros">
-                <div class="calorie-ring" id="calorie-ring">
+                <div class="calorie-ring">
                     <svg viewBox="0 0 120 120">
                         <circle class="ring-bg" cx="60" cy="60" r="52" />
                         <circle class="ring-fill" id="ring-fill" cx="60" cy="60" r="52" />
@@ -72,36 +102,36 @@
                     </div>
                 </div>
                 <div class="macros-list">
-                    <div class="macro-row">
-                        <span class="macro-dot dot-prot"></span>
-                        <span class="macro-name">Proteína</span>
-                        <span class="macro-val" id="total-prot">0</span><span class="macro-g">g</span>
-                    </div>
-                    <div class="macro-row">
-                        <span class="macro-dot dot-carb"></span>
-                        <span class="macro-name">Carbos</span>
-                        <span class="macro-val" id="total-carb">0</span><span class="macro-g">g</span>
-                    </div>
-                    <div class="macro-row">
-                        <span class="macro-dot dot-fat"></span>
-                        <span class="macro-name">Grasas</span>
-                        <span class="macro-val" id="total-fat">0</span><span class="macro-g">g</span>
-                    </div>
+                    <div class="macro-row"><span class="macro-dot dot-prot"></span><span class="macro-name">Proteína</span><span class="macro-val" id="total-prot">0</span><span class="macro-g">g</span></div>
+                    <div class="macro-row"><span class="macro-dot dot-carb"></span><span class="macro-name">Carbos</span><span class="macro-val" id="total-carb">0</span><span class="macro-g">g</span></div>
+                    <div class="macro-row"><span class="macro-dot dot-fat"></span><span class="macro-name">Grasas</span><span class="macro-val" id="total-fat">0</span><span class="macro-g">g</span></div>
+                    <div class="macro-row"><span class="macro-dot dot-fiber"></span><span class="macro-name">Fibra</span><span class="macro-val" id="total-fiber">0</span><span class="macro-g">g</span></div>
+                    <div class="macro-row"><span class="macro-dot dot-sodium"></span><span class="macro-name">Sodio</span><span class="macro-val" id="total-sodium">0</span><span class="macro-g">mg</span></div>
                 </div>
             </div>
-
             <div class="progress-container">
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
-                </div>
+                <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
                 <p class="progress-text"><span id="calories-consumed">0</span> / <span id="calories-goal">2000</span> kcal</p>
+            </div>
+            <!-- Fiber & Sodium bars -->
+            <div class="micro-bars">
+                <div class="micro-bar-row">
+                    <span class="micro-bar-label">🥦 Fibra</span>
+                    <div class="progress-bar micro"><div class="progress-fill fiber-fill" id="fiber-fill" style="width:0%"></div></div>
+                    <span class="micro-bar-val" id="fiber-bar-text">0/25g</span>
+                </div>
+                <div class="micro-bar-row">
+                    <span class="micro-bar-label">🧂 Sodio</span>
+                    <div class="progress-bar micro"><div class="progress-fill sodium-fill" id="sodium-fill" style="width:0%"></div></div>
+                    <span class="micro-bar-val" id="sodium-bar-text">0/2000mg</span>
+                </div>
             </div>
         </section>
 
         <!-- Water tracker -->
-        <section class="card glass water-section" aria-labelledby="water-title">
+        <section class="card glass water-section">
             <div class="section-header">
-                <h2 id="water-title" class="section-title">Hidratación 💧</h2>
+                <h2 class="section-title">Hidratación 💧</h2>
                 <span class="water-count" id="water-count">0 / 8 vasos</span>
             </div>
             <div class="water-glasses" id="water-glasses">
@@ -117,9 +147,9 @@
         </section>
 
         <!-- Food log -->
-        <section class="card glass log-section" aria-labelledby="log-title">
+        <section class="card glass log-section">
             <div class="section-header">
-                <h2 id="log-title" class="section-title">Comidas de Hoy</h2>
+                <h2 class="section-title">Comidas de Hoy</h2>
                 <button id="btn-clear-log" class="btn-icon-sm" title="Borrar registro">🗑️</button>
             </div>
             <div id="food-log" class="food-log">
@@ -128,51 +158,37 @@
         </section>
 
         <!-- Weekly history -->
-        <section class="card glass history-section" aria-labelledby="history-title">
-            <h2 id="history-title" class="section-title">Esta Semana</h2>
+        <section class="card glass history-section">
+            <h2 class="section-title">Esta Semana</h2>
             <div class="week-grid" id="week-grid"></div>
         </section>
 
         <!-- Quick suggestions -->
-        <section class="card glass menu-section" aria-labelledby="menu-title">
-            <h2 id="menu-title" class="section-title">Ideas Rápidas</h2>
+        <section class="card glass menu-section">
+            <h2 class="section-title">Ideas Rápidas</h2>
             <ul class="meal-list">
-                <li class="meal-item suggestion" data-name="Tostada integral con aguacate y huevo" data-cal="350" data-prot="15" data-carb="30" data-fat="18" data-cat="desayuno">
+                <li class="meal-item suggestion" data-name="Tostada integral con aguacate y huevo" data-cal="350" data-prot="15" data-carb="30" data-fat="18" data-fiber="6" data-sodium="320" data-cat="desayuno">
                     <span class="cat-icon">🌅</span>
-                    <div class="meal-info">
-                        <strong>Tostada con aguacate y huevo</strong>
-                        <span>350 kcal · P:15 C:30 G:18</span>
-                    </div>
+                    <div class="meal-info"><strong>Tostada con aguacate y huevo</strong><span>350 kcal · P:15 C:30 G:18</span></div>
                 </li>
-                <li class="meal-item suggestion" data-name="Bowl de garbanzos, espinacas y cherrys" data-cal="420" data-prot="18" data-carb="52" data-fat="14" data-cat="comida">
+                <li class="meal-item suggestion" data-name="Bowl de garbanzos, espinacas y cherrys" data-cal="420" data-prot="18" data-carb="52" data-fat="14" data-fiber="12" data-sodium="280" data-cat="comida">
                     <span class="cat-icon">☀️</span>
-                    <div class="meal-info">
-                        <strong>Bowl de garbanzos y espinacas</strong>
-                        <span>420 kcal · P:18 C:52 G:14</span>
-                    </div>
+                    <div class="meal-info"><strong>Bowl de garbanzos y espinacas</strong><span>420 kcal · P:18 C:52 G:14</span></div>
                 </li>
-                <li class="meal-item suggestion" data-name="Tortilla francesa con espárragos" data-cal="280" data-prot="20" data-carb="8" data-fat="18" data-cat="cena">
+                <li class="meal-item suggestion" data-name="Tortilla francesa con espárragos" data-cal="280" data-prot="20" data-carb="8" data-fat="18" data-fiber="3" data-sodium="420" data-cat="cena">
                     <span class="cat-icon">🌙</span>
-                    <div class="meal-info">
-                        <strong>Tortilla con espárragos</strong>
-                        <span>280 kcal · P:20 C:8 G:18</span>
-                    </div>
+                    <div class="meal-info"><strong>Tortilla con espárragos</strong><span>280 kcal · P:20 C:8 G:18</span></div>
                 </li>
-                <li class="meal-item suggestion" data-name="Yogur griego con arándanos y nueces" data-cal="180" data-prot="12" data-carb="16" data-fat="8" data-cat="snack">
+                <li class="meal-item suggestion" data-name="Yogur griego con arándanos y nueces" data-cal="180" data-prot="12" data-carb="16" data-fat="8" data-fiber="2" data-sodium="60" data-cat="snack">
                     <span class="cat-icon">🍎</span>
-                    <div class="meal-info">
-                        <strong>Yogur griego con arándanos</strong>
-                        <span>180 kcal · P:12 C:16 G:8</span>
-                    </div>
+                    <div class="meal-info"><strong>Yogur griego con arándanos</strong><span>180 kcal · P:12 C:16 G:8</span></div>
                 </li>
             </ul>
         </section>
 
     </main>
 
-    <footer class="app-footer">
-        <p>Nutrí 100 v3.0</p>
-    </footer>
+    <footer class="app-footer"><p>Nutrí 100 v4.0</p></footer>
 
     <!-- Modal: Cámara -->
     <div id="camera-modal" class="modal hidden">
@@ -203,24 +219,16 @@
                     <button type="button" class="cat-btn" data-cat="snack">🍎 Snack</button>
                 </div>
                 <div class="form-row">
-                    <div class="form-group">
-                        <label for="input-cal">Calorías</label>
-                        <input type="number" id="input-cal" placeholder="kcal" min="0" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="input-prot">Proteína</label>
-                        <input type="number" id="input-prot" placeholder="g" min="0" value="0">
-                    </div>
+                    <div class="form-group"><label for="input-cal">Calorías</label><input type="number" id="input-cal" placeholder="kcal" min="0" required></div>
+                    <div class="form-group"><label for="input-prot">Proteína</label><input type="number" id="input-prot" placeholder="g" min="0" value="0"></div>
                 </div>
                 <div class="form-row">
-                    <div class="form-group">
-                        <label for="input-carb">Carbos</label>
-                        <input type="number" id="input-carb" placeholder="g" min="0" value="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="input-fat">Grasas</label>
-                        <input type="number" id="input-fat" placeholder="g" min="0" value="0">
-                    </div>
+                    <div class="form-group"><label for="input-carb">Carbos</label><input type="number" id="input-carb" placeholder="g" min="0" value="0"></div>
+                    <div class="form-group"><label for="input-fat">Grasas</label><input type="number" id="input-fat" placeholder="g" min="0" value="0"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label for="input-fiber">Fibra</label><input type="number" id="input-fiber" placeholder="g" min="0" value="0"></div>
+                    <div class="form-group"><label for="input-sodium">Sodio</label><input type="number" id="input-sodium" placeholder="mg" min="0" value="0"></div>
                 </div>
                 <div class="modal-actions">
                     <button type="submit" class="btn btn-modal-primary">✅ Guardar</button>
@@ -235,10 +243,7 @@
         <div class="modal-content">
             <h3 class="modal-title">Dictar Comida</h3>
             <p class="voice-hint">Di lo que comiste, ej: "Arroz con pollo y ensalada"</p>
-            <div id="voice-indicator" class="voice-indicator">
-                <div class="pulse-ring"></div>
-                <span class="mic-icon">🎙️</span>
-            </div>
+            <div class="voice-indicator"><div class="pulse-ring"></div><span class="mic-icon">🎙️</span></div>
             <p id="voice-status" class="voice-status">Escuchando...</p>
             <p id="voice-transcript" class="voice-transcript"></p>
             <div class="modal-actions">
@@ -253,34 +258,73 @@
         <div class="modal-content">
             <h3 class="modal-title">Resultado del Análisis</h3>
             <div id="ai-result" class="ai-result"></div>
+            <div class="quality-badge-container" id="quality-container"></div>
             <form id="result-form" class="modal-form">
+                <div class="form-group"><label for="res-name">Plato</label><input type="text" id="res-name" required></div>
                 <div class="form-row">
-                    <div class="form-group">
-                        <label for="res-name">Plato</label>
-                        <input type="text" id="res-name" required>
-                    </div>
+                    <div class="form-group"><label for="res-cal">kcal</label><input type="number" id="res-cal" min="0" required></div>
+                    <div class="form-group"><label for="res-prot">Prot</label><input type="number" id="res-prot" min="0" value="0"></div>
+                    <div class="form-group"><label for="res-carb">Carb</label><input type="number" id="res-carb" min="0" value="0"></div>
                 </div>
-                <div class="form-row thirds">
-                    <div class="form-group">
-                        <label for="res-cal">kcal</label>
-                        <input type="number" id="res-cal" min="0" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="res-prot">Prot</label>
-                        <input type="number" id="res-prot" min="0" value="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="res-carb">Carb</label>
-                        <input type="number" id="res-carb" min="0" value="0">
-                    </div>
-                    <div class="form-group">
-                        <label for="res-fat">Grasa</label>
-                        <input type="number" id="res-fat" min="0" value="0">
-                    </div>
+                <div class="form-row">
+                    <div class="form-group"><label for="res-fat">Grasa</label><input type="number" id="res-fat" min="0" value="0"></div>
+                    <div class="form-group"><label for="res-fiber">Fibra</label><input type="number" id="res-fiber" min="0" value="0"></div>
+                    <div class="form-group"><label for="res-sodium">Sodio</label><input type="number" id="res-sodium" min="0" value="0"></div>
                 </div>
                 <div class="modal-actions">
                     <button type="submit" class="btn btn-modal-primary">✅ Añadir</button>
                     <button type="button" id="btn-cerrar-resultado" class="btn btn-modal-secondary">Descartar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Profile / TDEE -->
+    <div id="profile-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3 class="modal-title">Tu Perfil Nutricional</h3>
+            <p class="modal-subtitle">Calculamos tu gasto calórico con la fórmula Mifflin-St Jeor</p>
+            <form id="profile-form" class="modal-form">
+                <div class="form-row">
+                    <div class="form-group"><label for="prof-age">Edad</label><input type="number" id="prof-age" min="10" max="100" placeholder="años" required></div>
+                    <div class="form-group">
+                        <label for="prof-sex">Sexo</label>
+                        <select id="prof-sex" class="form-select">
+                            <option value="male">Hombre</option>
+                            <option value="female">Mujer</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label for="prof-weight">Peso (kg)</label><input type="number" id="prof-weight" min="30" max="300" step="0.1" placeholder="kg" required></div>
+                    <div class="form-group"><label for="prof-height">Altura (cm)</label><input type="number" id="prof-height" min="100" max="250" placeholder="cm" required></div>
+                </div>
+                <div class="form-group">
+                    <label for="prof-activity">Nivel de actividad</label>
+                    <select id="prof-activity" class="form-select">
+                        <option value="1.2">Sedentario (oficina, sin ejercicio)</option>
+                        <option value="1.375">Ligero (ejercicio 1-3 días/sem)</option>
+                        <option value="1.55" selected>Moderado (ejercicio 3-5 días/sem)</option>
+                        <option value="1.725">Activo (ejercicio 6-7 días/sem)</option>
+                        <option value="1.9">Muy activo (atleta, trabajo físico)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="prof-objective">Objetivo</label>
+                    <select id="prof-objective" class="form-select">
+                        <option value="lose">Perder grasa (-20%)</option>
+                        <option value="maintain" selected>Mantener peso</option>
+                        <option value="gain">Ganar músculo (+15%)</option>
+                    </select>
+                </div>
+                <div id="tdee-preview" class="tdee-preview hidden">
+                    <div class="tdee-preview-row"><span>TMB (metabolismo basal)</span><strong id="preview-bmr">—</strong></div>
+                    <div class="tdee-preview-row"><span>TDEE (gasto total)</span><strong id="preview-tdee">—</strong></div>
+                    <div class="tdee-preview-row highlight"><span>Tu objetivo calórico</span><strong id="preview-goal">—</strong></div>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="btn btn-modal-primary">💾 Guardar perfil</button>
+                    <button type="button" id="btn-cerrar-profile" class="btn btn-modal-secondary">Cancelar</button>
                 </div>
             </form>
         </div>
@@ -291,19 +335,25 @@
         <div class="modal-content">
             <h3 class="modal-title">Ajustes</h3>
             <form id="settings-form" class="modal-form">
-                <div class="form-group">
-                    <label for="set-goal">Objetivo calórico diario (kcal)</label>
-                    <input type="number" id="set-goal" min="500" max="8000" value="2000">
-                </div>
-                <div class="form-group">
-                    <label for="set-water">Vasos de agua objetivo</label>
-                    <input type="number" id="set-water" min="1" max="20" value="8">
-                </div>
+                <div class="form-group"><label for="set-goal">Objetivo calórico (kcal)</label><input type="number" id="set-goal" min="500" max="8000" value="2000"></div>
+                <div class="form-group"><label for="set-water">Vasos de agua objetivo</label><input type="number" id="set-water" min="1" max="20" value="8"></div>
+                <button type="button" id="btn-edit-profile" class="btn btn-modal-secondary" style="margin-bottom:4px">👤 Editar perfil TDEE</button>
                 <div class="modal-actions">
                     <button type="submit" class="btn btn-modal-primary">💾 Guardar</button>
                     <button type="button" id="btn-cerrar-settings" class="btn btn-modal-secondary">Cancelar</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Modal: AI Daily Report -->
+    <div id="report-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3 class="modal-title">🤖 Informe Nutricional</h3>
+            <div id="report-content" class="ai-result">Generando informe...</div>
+            <div class="modal-actions">
+                <button type="button" id="btn-cerrar-report" class="btn btn-modal-primary">Entendido</button>
+            </div>
         </div>
     </div>
 

@@ -83,7 +83,7 @@ export default async function handler(req, res) {
 
         if (base64Data) {
             parts.push({
-                text: "Eres un nutricionista experto. Analiza este plato de comida y estima las calorías, proteínas, carbohidratos y grasas. En la primera línea pon el nombre del plato. Después los valores nutricionales. Responde de forma breve y amigable."
+                text: "Eres un nutricionista experto. Analiza este plato de comida y estima: calorías, proteínas, carbohidratos, grasas, fibra y sodio. En la primera línea pon el nombre del plato. Formato: Calorías: Xkcal, Proteínas: Xg, Carbohidratos: Xg, Grasas: Xg, Fibra: Xg, Sodio: Xmg. Responde de forma breve y amigable."
             });
             parts.push({
                 inlineData: {
@@ -94,7 +94,7 @@ export default async function handler(req, res) {
         } else if (textData) {
             const sanitized = textData.replace(/[<>"'`]/g, '');
             parts.push({
-                text: `Eres un nutricionista experto. El usuario ha comido lo siguiente: "${sanitized}". Estima las calorías totales, proteínas, carbohidratos y grasas de esa comida. En la primera línea pon el nombre del plato. Después los valores nutricionales. Responde de forma breve y amigable.`
+                text: `Eres un nutricionista experto. El usuario ha comido lo siguiente: "${sanitized}". Estima: calorías, proteínas, carbohidratos, grasas, fibra y sodio. En la primera línea pon el nombre del plato. Formato: Calorías: Xkcal, Proteínas: Xg, Carbohidratos: Xg, Grasas: Xg, Fibra: Xg, Sodio: Xmg. Responde de forma breve y amigable.`
             });
         } else {
             return res.status(400).json({ error: 'No se recibieron datos para analizar' });
