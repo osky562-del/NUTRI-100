@@ -77,7 +77,23 @@ document.addEventListener('DOMContentLoaded', () => {
     function closeModal(m){ m.classList.add('hidden'); }
     function showToast(msg){ const t=$('toast');t.textContent=msg;t.classList.remove('hidden');t.style.animation='none';t.offsetHeight;t.style.animation='';clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.add('hidden'),2500); }
 
-    async function aiCall(body){ const r=await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); const d=await r.json(); if(d.error)throw new Error(d.error); return d.result; }
+    async function aiCall(body){
+        const r=await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+        if(!r.ok){
+            const txt=await r.text();
+            let msg='Error del servidor';
+            try{const p=JSON.parse(txt);if(p.error)msg=p.error;}catch(err){if(txt)msg=txt.slice(0,100);}
+            throw new Error(msg);
+        }
+        let d;
+        try {
+            d=await r.json();
+        } catch(jsonErr) {
+            throw new Error('Respuesta inválida del servidor');
+        }
+        if(d.error)throw new Error(d.error);
+        return d.result;
+    }
 
     // ===== INIT =====
     try {
